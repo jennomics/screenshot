@@ -20,7 +20,7 @@ public enum DataStore {
     /// The App Group identifier. Must match the entitlement enabled on BOTH the
     /// app target and the Share Extension target. Change this to your real
     /// group id when configuring signing.
-    public static let appGroupID = "group.com.yourteam.screenshot"
+    public static let appGroupID = "group.com.jennomics.screenshot"
 
     /// Which storage mode ended up being used (for logging/diagnostics/UI).
     public enum Mode: String, Sendable {

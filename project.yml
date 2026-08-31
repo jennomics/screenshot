@@ -8,7 +8,7 @@
 #                      linked into BOTH targets so they share one schema + store.
 name: Screenshot
 options:
-  bundleIdPrefix: com.yourteam
+  bundleIdPrefix: com.jennomics
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
@@ -39,7 +39,7 @@ targets:
       - target: ShareExtension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourteam.screenshot
+        PRODUCT_BUNDLE_IDENTIFIER: com.jennomics.screenshot
         INFOPLIST_FILE: App/Info.plist
         CODE_SIGN_ENTITLEMENTS: App/Screenshot.entitlements
         GENERATE_INFOPLIST_FILE: NO
@@ -53,7 +53,7 @@ targets:
       - package: ScreenshotKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourteam.screenshot.share
+        PRODUCT_BUNDLE_IDENTIFIER: com.jennomics.screenshot.share
         INFOPLIST_FILE: ShareExtension/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
         GENERATE_INFOPLIST_FILE: NO
