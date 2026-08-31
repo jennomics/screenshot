@@ -57,3 +57,22 @@ targets:
         INFOPLIST_FILE: ShareExtension/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
         GENERATE_INFOPLIST_FILE: NO
+
+# Explicit SHARED scheme so the Run destination selector always appears in
+# Xcode's toolbar (auto-generated schemes are per-user and sometimes don't
+# materialize on first open of a freshly generated project).
+schemes:
+  Screenshot:
+    build:
+      targets:
+        Screenshot: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
