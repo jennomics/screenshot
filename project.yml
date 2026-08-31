@@ -1,0 +1,59 @@
+# XcodeGen project spec — declarative source of truth for the .xcodeproj.
+# Generate with:  xcodegen generate   (brew install xcodegen)
+#
+# Structure:
+#   Screenshot       — the SwiftUI app
+#   ShareExtension   — the capture-modal Share Extension (embedded in the app)
+#   ScreenshotKit    — the shared on-device data layer + design system (SwiftPM),
+#                      linked into BOTH targets so they share one schema + store.
+name: Screenshot
+options:
+  bundleIdPrefix: com.yourteam
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  ScreenshotKit:
+    path: ScreenshotKit
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    # Keep app + extension versions in sync (they must match, or the build warns).
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Replace with your real team + App Group. The group id must match the
+    # entitlements files in App/ and ShareExtension/.
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  Screenshot:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: ScreenshotKit
+      - target: ShareExtension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourteam.screenshot
+        INFOPLIST_FILE: App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: App/Screenshot.entitlements
+        GENERATE_INFOPLIST_FILE: NO
+
+  ShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: ShareExtension
+    dependencies:
+      - package: ScreenshotKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourteam.screenshot.share
+        INFOPLIST_FILE: ShareExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
+        GENERATE_INFOPLIST_FILE: NO
