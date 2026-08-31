@@ -24,5 +24,16 @@
 	<!-- Needed for the Photos-scanner capture path. -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Screenshot scans your recent screenshots so it can categorize them for you. Nothing leaves your device.</string>
+	<!-- Bundled design-system fonts (OFL). Without these the app falls back to
+	     the system font; the marketing video needs the real typography. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>ZenKakuGothicNew-Regular.ttf</string>
+		<string>ZenKakuGothicNew-Medium.ttf</string>
+		<string>ZenKakuGothicNew-Bold.ttf</string>
+		<string>ZenKakuGothicNew-Black.ttf</string>
+		<string>DMMono-Regular.ttf</string>
+		<string>DMMono-Medium.ttf</string>
+	</array>
 </dict>
 </plist>

@@ -20,3 +20,8 @@ Package.resolved
 
 # groundcrew logs (local automation)
 .kiro/agent-log.md
+
+# Video pipeline — generated artifacts and deps (never committed).
+video/node_modules/
+video/assets/
+video/out/

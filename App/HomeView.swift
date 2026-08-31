@@ -50,10 +50,24 @@ struct HomeView: View {
         .sheet(isPresented: $showSettings) { SettingsView() }
         .task {
             #if DEBUG
-            SampleData.seedIfEmpty(context)
-            #endif
+            // Deterministic capture (R7): when launched by the video pipeline's
+            // XCUITests with -uiTestSeed, wipe and re-seed so every recording
+            // starts from identical state. Otherwise seed only if empty.
+            let uiTestSeed = ProcessInfo.processInfo.arguments.contains("-uiTestSeed")
+            if uiTestSeed {
+                SampleData.reset(context)
+            } else {
+                SampleData.seedIfEmpty(context)
+            }
+            // Skip the permission prompt under UI-test capture so no system
+            // dialog interrupts the recording.
+            if !uiTestSeed {
+                await NotificationScheduler.requestAuthorization()
+            }
+            #else
             // Ask for notification permission once so due-date reminders can fire.
             await NotificationScheduler.requestAuthorization()
+            #endif
         }
     }
 

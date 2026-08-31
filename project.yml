@@ -34,6 +34,12 @@ targets:
     platform: iOS
     sources:
       - path: App
+        excludes:
+          - "Resources/SeedImages/**"
+      # Bundle the seed screenshots explicitly as resources so they ship in the
+      # app and can be loaded at runtime via Bundle.main.
+      - path: App/Resources/SeedImages
+        buildPhase: resources
     dependencies:
       - package: ScreenshotKit
       - target: ShareExtension
@@ -59,6 +65,21 @@ targets:
         CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
         GENERATE_INFOPLIST_FILE: NO
 
+  # UI-test target driven by the marketing-video pipeline (video/). Records the
+  # five R6 demo flows from the simulator. Sole app-side addition the pipeline
+  # requires (requirement N5).
+  ScreenshotUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: Screenshot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jennomics.screenshot.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
 # Explicit SHARED scheme so the Run destination selector always appears in
 # Xcode's toolbar (auto-generated schemes are per-user and sometimes don't
 # materialize on first open of a freshly generated project).
@@ -71,6 +92,8 @@ schemes:
       config: Debug
     test:
       config: Debug
+      targets:
+        - ScreenshotUITests
     profile:
       config: Release
     analyze:

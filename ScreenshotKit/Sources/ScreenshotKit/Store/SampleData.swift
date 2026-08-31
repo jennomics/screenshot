@@ -46,7 +46,7 @@ public enum SampleData {
 
         // Collections mirroring the prototype.
         let painting = Collection(name: "Painting inspiration", primaryCategory: .inspiration)
-        let driversEd = Collection(name: "Driver's ed for Ellie", primaryCategory: .kids)
+        let driversEd = Collection(name: "Driver's ed for Vivian", primaryCategory: .kids)
         let kittenHeels = Collection(name: "Kitten heels", primaryCategory: .shopping)
         let weeknight = Collection(name: "Weeknight dinners", primaryCategory: .recipes)
         let readLater = Collection(name: "Read later", primaryCategory: .readLater)
@@ -56,36 +56,44 @@ public enum SampleData {
         // Items — spread across time buckets, some with due dates so
         // "Needs attention" has content. (These match the prototype's data.)
         let items: [SavedItem] = [
-            // painting
-            SavedItem(createdAt: daysAgo(3), mode: .info,
-                      note: "The way the light falls on the water here.",
-                      extractedText: "Muted terracotta + sage palette · loose brushwork reference",
+            // painting — kept as an IMAGE (a visual reference you want to look at)
+            SavedItem(createdAt: daysAgo(3), mode: .image,
+                      note: "Sunset colors for squeegee art.",
+                      imageData: seedImage("painting"),
                       categories: [.inspiration], collection: painting),
-            SavedItem(createdAt: daysAgo(9), mode: .info,
-                      extractedText: "Wet-on-wet for skies, dry-brush foliage. Artist: @mara.paints.",
-                      categories: [.inspiration], collection: painting),
+            // an upcoming workshop — IMAGE with a real future due date (Oct 17, 2026)
+            SavedItem(createdAt: daysAgo(9), mode: .image,
+                      note: "Encaustic Art workshop I want to sign up for.",
+                      imageData: seedImage("art-workshop"),
+                      categories: [.inspiration],
+                      dueDate: specificDate(year: 2026, month: 10, day: 17),
+                      dueSourcePhrase: "October 17, 2026",
+                      collection: painting),
 
             // driver's ed — due tomorrow (Needs attention)
             SavedItem(createdAt: daysAgo(1), mode: .info,
-                      note: "Where to sign Ellie up for driver's ed.",
+                      note: "Where to sign Vivian up for driver's ed.",
                       extractedText: "Riverside Driving School · enrollment closes Fri · $480 · (555) 0142",
                       categories: [.todo, .kids],
                       dueDate: daysAhead(1), dueSourcePhrase: "enrollment closes Fri",
                       collection: driversEd),
+            SavedItem(createdAt: daysAgo(1), mode: .image,
+                      note: "Sign Vivian up by tomorrow.",
+                      imageData: seedImage("drivers-ed"),
+                      categories: [.kids], collection: driversEd),
 
-            // kitten heels — one due soon (Needs attention)
-            SavedItem(createdAt: daysAgo(5), mode: .info,
-                      note: "These in the tan color. Wait for a sale.",
-                      extractedText: "Tan pointed-toe · size up half a size per reviews",
+            // kitten heels — kept as an IMAGE (the actual pair you saw)
+            SavedItem(createdAt: daysAgo(5), mode: .image,
+                      note: "Quince · $84 · black leather slingback.",
+                      imageData: seedImage("kitten-heels"),
                       categories: [.shopping], collection: kittenHeels),
             SavedItem(createdAt: daysAgo(45), mode: .info,
-                      extractedText: "Brand runs a half size small. Free returns within 30 days.",
+                      extractedText: "Quince kitten heels · $84 · black leather · slingback · runs true to size",
                       categories: [.shopping], collection: kittenHeels),
             SavedItem(createdAt: daysAgo(120), mode: .info,
-                      note: "The pointed-toe pair — sale ends soon.",
-                      extractedText: "Sale ends soon per caption",
+                      note: "Wait for a sale before buying.",
+                      extractedText: "Free returns within 30 days",
                       categories: [.shopping],
-                      dueDate: daysAhead(2), dueSourcePhrase: "sale ends soon",
                       collection: kittenHeels),
 
             // recipes
@@ -124,6 +132,23 @@ public enum SampleData {
         items.forEach(context.insert)
 
         try? context.save()
+    }
+
+    /// Loads a bundled seed screenshot's bytes by base name (e.g. "painting").
+    /// Images live in App/Resources/SeedImages and ship in the app bundle.
+    /// Returns nil if not found (the detail view falls back to a placeholder).
+    static func seedImage(_ name: String) -> Data? {
+        if let url = Bundle.main.url(forResource: name, withExtension: "jpg") {
+            return try? Data(contentsOf: url)
+        }
+        return nil
+    }
+
+    /// A concrete calendar date (for fixed events like the workshop).
+    static func specificDate(year: Int, month: Int, day: Int) -> Date {
+        var c = DateComponents()
+        c.year = year; c.month = month; c.day = day; c.hour = 9
+        return Calendar.current.date(from: c) ?? .now
     }
 }
 #endif
