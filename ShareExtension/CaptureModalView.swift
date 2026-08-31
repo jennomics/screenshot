@@ -210,10 +210,11 @@ struct CaptureModalView: View {
         context.insert(item)
         try? context.save()
 
-        // Schedule the local reminder (fire-and-forget; permission handled at
-        // app launch / first scan).
-        if item.dueDate != nil {
-            Task { await NotificationScheduler.schedule(for: item) }
+        // Extract a Sendable reminder snapshot synchronously (on this view's
+        // actor) BEFORE crossing into the Task — never capture the SavedItem or
+        // ModelContext in a concurrent closure.
+        if let req = NotificationScheduler.request(for: item) {
+            Task { await NotificationScheduler.schedule(req) }
         }
         onComplete()
     }

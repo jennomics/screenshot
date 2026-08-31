@@ -33,16 +33,22 @@ public enum PhotoScanner {
     }
 
     /// Scan recent screenshots and import any not already saved.
+    ///
+    /// Runs entirely on the `@MainActor` so the `ModelContext` and the
+    /// `SavedItem`s it creates never cross an actor boundary (SwiftData models
+    /// aren't `Sendable`). The `await`s for image loading and OCR simply
+    /// suspend; they don't move the context off the main actor.
     /// - Parameters:
     ///   - limit: max number of most-recent screenshots to consider.
     ///   - context: the shared model context to write into.
-    ///   - onProgress: optional progress callback (main actor).
+    ///   - onProgress: optional progress callback.
     /// - Returns: number of newly imported items.
+    @MainActor
     @discardableResult
     public static func scan(
         limit: Int = 100,
         context: ModelContext,
-        onProgress: (@MainActor (Progress) -> Void)? = nil
+        onProgress: ((Progress) -> Void)? = nil
     ) async throws -> Int {
         let status = await requestAuthorization()
         guard status == .authorized || status == .limited else { throw ScanError.notAuthorized }
@@ -85,16 +91,15 @@ public enum PhotoScanner {
                 dueDate: analysis.due?.date,
                 dueSourcePhrase: analysis.due?.phrase
             )
-            await MainActor.run { context.insert(item) }
+            context.insert(item)
             imported += 1
 
             if let onProgress {
-                let p = Progress(scanned: i + 1, imported: imported, total: total)
-                await MainActor.run { onProgress(p) }
+                onProgress(Progress(scanned: i + 1, imported: imported, total: total))
             }
         }
 
-        await MainActor.run { try? context.save() }
+        try? context.save()
         return imported
     }
 
