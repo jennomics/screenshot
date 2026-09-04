@@ -1,20 +1,31 @@
 import SwiftUI
 import SwiftData
-import ScreenshotKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
-// Disambiguate from the Objective-C runtime's `Category` type (objc_category),
-// which is in scope via UIKit/ObjC interop. Without this, unqualified `Category`
-// is ambiguous in this file.
-private typealias Category = ScreenshotKit.Category
+// `Category` here is ScreenshotKit's own model type. (In the Share Extension
+// this file needed a typealias to disambiguate from the ObjC runtime's
+// `Category`; inside the module the model type is unambiguous.)
 
 /// The capture modal — the moment a screenshot is saved. Mirrors the prototype:
 /// multi-select categories (Suggested → Purpose), free-text note, auto-detected
 /// due date, reminder, and the two-way "Save info" / "Save image" choice.
 /// Dismiss is explicit only (X + Cancel).
-struct CaptureModalView: View {
+///
+/// Lives in ScreenshotKit so both the Share Extension (its production entry via
+/// the iOS share sheet) and the app (a DEBUG-only, seeded entry used by the
+/// marketing-video UI tests) can present the same real UI.
+///
+/// When `seed` is supplied the modal skips live Vision analysis and renders the
+/// injected, deterministic values — this is what lets the video pipeline show
+/// flows 1 and 2 as real UI without relying on on-device inference (C4). When
+/// `seed` is nil the behavior is unchanged: OCR the image and analyze live.
+public struct CaptureModalView: View {
     @Environment(\.modelContext) private var context
 
     let image: UIImage?
+    let seed: ScreenshotAnalysis?
     let onComplete: () -> Void
     let onCancel: () -> Void
 
@@ -28,8 +39,14 @@ struct CaptureModalView: View {
     @State private var extractedText: String = ""
     @State private var analyzing = true
 
-    init(image: UIImage?, onComplete: @escaping () -> Void, onCancel: @escaping () -> Void) {
+    public init(
+        image: UIImage?,
+        seed: ScreenshotAnalysis? = nil,
+        onComplete: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) {
         self.image = image
+        self.seed = seed
         self.onComplete = onComplete
         self.onCancel = onCancel
     }
@@ -37,7 +54,7 @@ struct CaptureModalView: View {
     private var isPristine: Bool { chosen == [suggestion] }
     private var categoryLabel: String { isPristine ? "Suggested" : "Purpose" }
 
-    var body: some View {
+    public var body: some View {
         ZStack(alignment: .bottom) {
             Color.black.opacity(0.55).ignoresSafeArea()
             sheet
@@ -159,9 +176,13 @@ struct CaptureModalView: View {
 
     /// Real on-device analysis: OCR the screenshot with Vision, then derive the
     /// category suggestion and due date from the extracted text. All local.
+    /// When a deterministic `seed` was injected (video UI tests), use it and
+    /// skip Vision entirely.
     private func analyze() async {
         let analysis: ScreenshotAnalysis
-        if let cg = image?.cgImage {
+        if let seed {
+            analysis = seed
+        } else if let cg = image?.cgImage {
             analysis = await ScreenshotAnalyzer.analyze(image: cg)
         } else {
             analysis = ScreenshotAnalyzer.analyze(text: "")

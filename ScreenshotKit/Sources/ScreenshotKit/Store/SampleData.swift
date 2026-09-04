@@ -69,6 +69,12 @@ public enum SampleData {
                       dueDate: specificDate(year: 2026, month: 10, day: 17),
                       dueSourcePhrase: "October 17, 2026",
                       collection: painting),
+            // an INFO-kept save in the same collection, so the collection detail
+            // shows an image card and an extracted-text card side by side (demo
+            // wants both kinds visible).
+            SavedItem(createdAt: daysAgo(6), mode: .info,
+                      extractedText: "Sacramento Fine Arts · Encaustic Art workshop · Sat Oct 17, 10–2 · $95 · bring an apron",
+                      categories: [.inspiration], collection: painting),
 
             // driver's ed — due tomorrow (Needs attention)
             SavedItem(createdAt: daysAgo(1), mode: .info,

@@ -5,37 +5,28 @@ import Foundation
 /// home screen shows, per bucket, only items not already surfaced by an earlier
 /// bucket, so each card reveals new content. Empty buckets are not rendered.
 public enum TimeBucket: String, CaseIterable, Identifiable, Sendable {
-    case yesterday, thisWeek, lastWeek, thisMonth, lastMonth
-    case thisQuarter, lastQuarter, thisYear, lastYear
+    case lastWeek, lastMonth, lastQuarter, lastYear
 
     public var id: String { rawValue }
 
     public var label: String {
         switch self {
-        case .yesterday:   return "Yesterday"
-        case .thisWeek:    return "This week"
         case .lastWeek:    return "Last week"
-        case .thisMonth:   return "This month"
         case .lastMonth:   return "Last month"
-        case .thisQuarter: return "This quarter"
         case .lastQuarter: return "Last quarter"
-        case .thisYear:    return "This year"
         case .lastYear:    return "Last year"
         }
     }
 
-    /// Inclusive day-offset range from "today".
+    /// Inclusive day-offset range from "today". The four windows are gapless and
+    /// cover everything from 1 day ago onward, so every non-archived item lands
+    /// in exactly one bucket (Last year is the catch-all for anything older).
     public var range: ClosedRange<Int> {
         switch self {
-        case .yesterday:   return 1...1
-        case .thisWeek:    return 2...6
-        case .lastWeek:    return 7...13
-        case .thisMonth:   return 14...29
-        case .lastMonth:   return 30...59
-        case .thisQuarter: return 60...89
-        case .lastQuarter: return 90...179
-        case .thisYear:    return 180...364
-        case .lastYear:    return 365...Int.max
+        case .lastWeek:    return 1...13
+        case .lastMonth:   return 14...59
+        case .lastQuarter: return 60...179
+        case .lastYear:    return 180...Int.max
         }
     }
 

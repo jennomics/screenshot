@@ -2,32 +2,58 @@ import SwiftUI
 import SwiftData
 import ScreenshotKit
 
-/// Home screen: Needs attention (if any) → compact recent marquee → time
-/// buckets. Mirrors the prototype layout. Reads live from the shared store.
+/// Home screen. Deliberately delight-first, not a reminder dashboard: it opens
+/// on a highlight reel of what you've saved (Most recent), then a quiet,
+/// heading-less pair of due summaries, then the "Looking back" time buckets.
+/// Reads live from the shared store.
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \SavedItem.createdAt, order: .reverse) private var items: [SavedItem]
     @State private var showSettings = false
 
     private var due: [SavedItem] { items.needingAttention() }
-    private var recent: [SavedItem] { Array(items.filter { !$0.isArchived }.prefix(8)) }
+    // Most recent: interleaved across categories by recency (cat1.1, cat2.1,
+    // cat3.1, cat1.2, ...) so the highlight reel doesn't clump one category.
+    private var recent: [SavedItem] {
+        SavedItem.interleavedByCategory(items.filter { !$0.isArchived })
+    }
     private var buckets: [(bucket: TimeBucket, items: [SavedItem])] { TimeBucket.partition(items) }
+
+    // Split the due items into overdue-or-today vs due-soon for the two summary
+    // cards.
+    private var dueOver: [SavedItem] {
+        due.filter { item in
+            guard let d = item.dueDate else { return false }
+            switch DueStatus.from(dueDate: d) { case .overdue, .today: return true; default: return false }
+        }
+    }
+    private var dueSoon: [SavedItem] {
+        due.filter { item in
+            guard let d = item.dueDate else { return false }
+            if case .soon = DueStatus.from(dueDate: d) { return true }
+            return false
+        }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Space.s3) {
                 header
 
-                if !due.isEmpty {
-                    Section_(title: "Needs attention", background: Theme.Palette.liveWash) {
-                        ForEach(due) { NeedsAttentionRow(item: $0) }
-                    }
-                }
-
+                // 1. Highlight reel first — the delightful part.
                 Section_(title: "Most recent") {
-                    RecentMarquee(items: recent)
+                    RecentCarousel(items: recent)
                 }
 
+                // 2. Quiet due summaries — no scary "NEEDS ATTENTION" heading,
+                //    just two small cards on the pale live-wash. Only shown when
+                //    there's actually something due.
+                if !dueOver.isEmpty || !dueSoon.isEmpty {
+                    DueSummaryRow(overCount: dueOver.count, soonCount: dueSoon.count,
+                                  jumpTo: dueSoon.first ?? dueOver.first)
+                }
+
+                // 3. Looking back — time buckets that swap through their items.
                 Section_(title: "Looking back") {
                     ForEach(buckets, id: \.bucket.id) { entry in
                         BucketCard(label: entry.bucket.label, items: entry.items)

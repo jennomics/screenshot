@@ -26,5 +26,18 @@ struct RootView: View {
             .tag(Tab.collections)
         }
         .tint(Theme.Palette.live)
+        .modifier(DebugCaptureEntryIfAvailable())
+    }
+}
+
+/// Applies the DEBUG-only seeded capture entry when compiled in DEBUG; a no-op
+/// otherwise, so release builds never reference the test-only modifier.
+private struct DebugCaptureEntryIfAvailable: ViewModifier {
+    func body(content: Content) -> some View {
+        #if DEBUG
+        content.debugCaptureEntry()
+        #else
+        content
+        #endif
     }
 }
