@@ -13,6 +13,11 @@ options:
     iOS: "17.0"
   createIntermediateGroups: true
 
+# Explicit configurations so compiler flags are unambiguous per build type.
+configs:
+  Debug: debug
+  Release: release
+
 packages:
   ScreenshotKit:
     path: ScreenshotKit
@@ -23,10 +28,21 @@ settings:
     # Keep app + extension versions in sync (they must match, or the build warns).
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
-    # Replace with your real team + App Group. The group id must match the
-    # entitlements files in App/ and ShareExtension/.
-    DEVELOPMENT_TEAM: ""
+    # Team + App Group. The group id must match the entitlements files in App/
+    # and ShareExtension/.
+    DEVELOPMENT_TEAM: 376BFM76K7
     CODE_SIGN_STYLE: Automatic
+  configs:
+    # DEBUG is defined ONLY in Debug. The sample-data seed is wrapped in
+    # `#if DEBUG`, so this guarantees it can never ship in a Release build /
+    # archive, regardless of how the app is built.
+    Debug:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: DEBUG
+      GCC_PREPROCESSOR_DEFINITIONS: "DEBUG=1 $(inherited)"
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+    Release:
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: ""
+      SWIFT_OPTIMIZATION_LEVEL: "-O"
 
 targets:
   Screenshot:
