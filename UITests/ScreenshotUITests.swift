@@ -63,21 +63,21 @@ final class ScreenshotUITests: XCTestCase {
 
         // Hold on the categories part first (top of the sheet). The video pans
         // here while the VO covers "keep the image… categorize… it's an errand".
-        dwell(4.0)
+        dwell(6.0)
 
         // Multi-select: add "Kids" → label flips Suggested -> Purpose, both
         // chips read selected.
         let kids = app.buttons.containing(NSPredicate(format: "label CONTAINS[c] %@", "Kids")).firstMatch
         require(kids, "Kids chip").tap()
         require(app.staticTexts["PURPOSE"], "purpose label after multi-select")
-        dwell(3.0)
+        dwell(4.0)
 
         // The DETECTED banner is already present lower in the same sheet; hold
-        // the modal open, stable, while the video pans down to it for the
-        // "if there's a date…" portion of the VO. No taps that would change or
-        // dismiss the sheet — just keep it on screen and steady.
+        // the modal open, stable, well past the end of the ~20s combined VO
+        // (incl. the 3s pause) so the video's zoom+pan has room. No taps that
+        // would change or dismiss the sheet — just keep it on screen and steady.
         require(app.staticTexts["✦ DETECTED"], "detected banner")
-        dwell(7.0)
+        dwell(16.0)
     }
 
     // MARK: Flow 2 — Home: "Needs attention" with urgency flags
@@ -85,21 +85,13 @@ final class ScreenshotUITests: XCTestCase {
     func testFlow2_NeedsAttention() {
         let app = launchedApp()
 
-        // The redesigned Home opens delight-first: header, then the Most recent
-        // highlight reel, then the quiet DUE OVER / DUE SOON summary (no scary
-        // "NEEDS ATTENTION" heading). Let it settle on the top...
+        // Hold STILL on the delight-first top of Home: the header, the Most
+        // recent carousel, and the quiet DUE OVER / DUE SOON summary. No
+        // scrolling — this is the clean top view the video rests on while the VO
+        // covers "time-sensitive screenshots rise to the top."
         require(app.staticTexts["Here's what caught your eye."], "home header")
-        dwell(2.0)
-
-        // ...then move down the page so the scene shows the flow of content
-        // rather than sitting on one view. The due summary and Looking back come
-        // into view as it scrolls.
-        app.swipeUp(velocity: .slow)
-        dwell(1.6)
-        app.swipeUp(velocity: .slow)
-        dwell(1.6)
-        app.swipeUp(velocity: .slow)
-        dwell(1.8)
+        require(app.staticTexts["DUE OVER"], "due-over card")
+        dwell(9.0)
     }
 
     // MARK: Flow 3 — Home: "Looking back" time buckets

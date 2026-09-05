@@ -82,6 +82,9 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 interface RunOptions {
   description?: string;
   timeoutMs?: number; // per-command executor timeout (groundcrew-side)
+  retries?: number; // per-command retry count (0..3). Set 0 for side-effecting
+  // commands (sim boot/record, builds) so a transient failure never re-runs the
+  // whole command (a re-boot triggers another simulator daemon storm).
   cwd?: string; // absolute; defaults to the screenshot repo root
   pollIntervalMs?: number;
   clientTimeoutMs?: number; // give up polling after this (client-side safety)
@@ -104,6 +107,7 @@ export async function gcRun(command: string, opts: RunOptions = {}): Promise<GcR
     source: "video-pipeline",
   };
   if (opts.timeoutMs !== undefined) body.timeout = opts.timeoutMs;
+  if (opts.retries !== undefined) body.retries = opts.retries;
 
   const postRes = await fetch(`${base}/_gc/commands`, {
     method: "POST",
